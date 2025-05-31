@@ -1,0 +1,805 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Picture Perfect Detailing offers mobile car detailing services in Ragley, LA, and Nederland, TX. Book your appointment for packages or specialized services like ceramic coating.">
+    <meta name="keywords" content="car detailing, mobile detailing, Ragley LA, Nederland TX, ceramic coating, paint correction">
+    <meta name="author" content="Picture Perfect Detailing">
+    <title>Picture Perfect Detailing</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2300f0ff'><path d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v4h4v2h-4v4h-2v-4H7v-2h4V7z'/></svg>">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(180deg, #0a1a33 0%, #1e3a8a 100%);
+            color: #e5e7eb;
+            overflow-x: hidden;
+        }
+        header {
+            background: linear-gradient(90deg, #00f0ff, #9b4dff);
+            text-align: center;
+            padding: 2rem 1rem;
+            position: relative;
+            animation: glow 3s infinite alternate;
+        }
+        header h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.5rem;
+            color: #fff;
+            text-shadow: 0 0 10px #00f0ff;
+        }
+        header p {
+            font-size: 1.1rem;
+            margin-top: 0.5rem;
+            color: #e0f2fe;
+        }
+        nav {
+            background: rgba(10, 26, 51, 0.8);
+            backdrop-filter: blur(10px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            padding: 1rem;
+        }
+        nav ul {
+            list-style: none;
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+        }
+        nav a {
+            color: #00f0ff;
+            font-family: 'Orbitron', sans-serif;
+            text-decoration: none;
+            font-size: 1.1rem;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+        nav a:hover, nav a:focus {
+            background: #9b4dff;
+            color: #fff;
+            box-shadow: 0 0 15px #9b4dff;
+        }
+        .hero {
+            text-align: center;
+            padding: 4rem 1rem;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144" fill="none" stroke="#00f0ff" stroke-width="0.5" opacity="0.2"><path d="M72 0 L144 72 L72 144 L0 72 Z"/></svg>'), linear-gradient(45deg, #2563eb, #9b4dff);
+            position: relative;
+            overflow: hidden;
+        }
+        #particles {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        .hero-content {
+            position: relative;
+            z-index: 1;
+        }
+        .hero h2 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2rem;
+            color: #fff;
+            text-shadow: 0 0 15px #ff2d55;
+            margin-bottom: 1rem;
+        }
+        .hero p {
+            font-size: 1.1rem;
+            color: #e0f2fe;
+            margin-bottom: 1.5rem;
+        }
+        .btn {
+            background: linear-gradient(45deg, #00f0ff, #9b4dff);
+            color: #fff;
+            font-family: 'Orbitron', sans-serif;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: transform 0.3s, box-shadow 0.3s;
+            margin: 0.5rem;
+        }
+        .btn:hover, .btn:focus {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px #00f0ff;
+        }
+        .services, .specialized-services, .process {
+            padding: 3rem 1rem;
+            background: rgba(10, 26, 51, 0.9);
+        }
+        .contact {
+            padding: 3rem 1rem;
+            background: rgba(255, 255, 255, 0.1);
+        }
+        .services h2, .specialized-services h2, .process h2, .contact h2 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2rem;
+            color: #00f0ff;
+            text-align: center;
+            margin-bottom: 2rem;
+            text-shadow: 0 0 10px #00f0ff;
+        }
+        .service-grid, .process-grid {
+            max-width: 80rem;
+            margin: 0 auto;
+            display: grid;
+            gap: 1.5rem;
+        }
+        .service-card, .process-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(5px);
+            padding: 1.5rem;
+            border-radius: 15px;
+            border: 1px solid rgba(0, 240, 255, 0.2);
+            transition: transform 0.3s, box-shadow 0.3s;
+            animation: slideIn 0.5s ease-out;
+        }
+        .service-card:hover, .process-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 0 20px #9b4dff;
+        }
+        .service-card h3, .process-card h3 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.5rem;
+            color: #fff;
+            margin-bottom: 0.5rem;
+        }
+        .service-card p, .process-card p {
+            color: #d1d5db;
+            font-size: 1rem;
+            margin-bottom: 1rem;
+        }
+        .service-card .price {
+            color: #ff2d55;
+            font-weight: 600;
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+        }
+        .service-card ul, .process-card ul {
+            list-style: disc;
+            padding-left: 1.25rem;
+            color: #d1d5db;
+        }
+        .contact p {
+            font-size: 1.1rem;
+            color: #d1d5db;
+            margin-bottom: 1rem;
+        }
+        .contact a {
+            color: #00f0ff;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        .contact a:hover, .contact a:focus {
+            color: #ff2d55;
+        }
+        footer {
+            background: linear-gradient(90deg, #00f0ff, #9b4dff);
+            color: #fff;
+            text-align: center;
+            padding: 1.5rem;
+            font-size: 0.9rem;
+        }
+        footer a {
+            color: #e0f2fe;
+            text-decoration: none;
+            margin: 0 0.5rem;
+            transition: color 0.3s;
+        }
+        footer a:hover, footer a:focus {
+            color: #ff2d55;
+        }
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 26, 51, 0.8);
+            backdrop-filter: blur(5px);
+            z-index: 200;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.3s ease-out;
+            overflow-y: auto;
+            padding: 1rem;
+        }
+        .modal-content {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 2rem;
+            border-radius: 15px;
+            border: 1px solid #00f0ff;
+            max-width: 500px;
+            width: 90%;
+            color: #e5e7eb;
+            position: relative;
+            box-shadow: 0 0 20px #9b4dff;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .modal-content h3 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.8rem;
+            color: #00f0ff;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+        .modal-content label {
+            display: block;
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+            color: #fff;
+        }
+        .modal-content input, .modal-content select, .modal-content textarea {
+            width: 100%;
+            padding: 0.5rem;
+            margin-bottom: 1rem;
+            border: 1px solid #00f0ff;
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.05);
+            color: #e5e7eb;
+            font-size: 1rem;
+        }
+        .modal-content textarea {
+            height: 100px;
+            resize: vertical;
+        }
+        .modal-content .checkbox-group {
+            margin-bottom: 1rem;
+        }
+        .modal-content .checkbox-group label {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.5rem;
+            font-size: 1rem;
+        }
+        .modal-content .checkbox-group input[type="checkbox"] {
+            width: auto;
+            margin-right: 0.5rem;
+        }
+        .modal-content .btn {
+            width: 100%;
+            margin-top: 1rem;
+        }
+        .back-btn {
+            background: linear-gradient(45deg, #ff2d55, #9b4dff);
+            padding: 0.5rem 1rem;
+            font-size: 1rem;
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+        }
+        .confirmation {
+            display: none;
+            text-align: center;
+            color: #00f0ff;
+            font-size: 1.1rem;
+            margin-top: 1rem;
+        }
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            border: 0;
+        }
+        .datetime-group {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        .datetime-group select {
+            flex: 1;
+        }
+        @keyframes glow {
+            from { box-shadow: 0 0 10px #00f0ff; }
+            to { box-shadow: 0 0 20px #9b4dff; }
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @media (min-width: 768px) {
+            .service-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            .process-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            header h1 {
+                font-size: 3rem;
+            }
+            .hero h2, .services h2, .specialized-services h2, .process h2, .contact h2 {
+                font-size: 2.5rem;
+            }
+            nav ul {
+                gap: 2rem;
+            }
+            nav a {
+                font-size: 1.2rem;
+            }
+        }
+        @media (max-width: 767px) {
+            nav ul {
+                flex-direction: column;
+                align-items: center;
+                gap: 1rem;
+            }
+            .service-grid, .process-grid {
+                grid-template-columns: 1fr;
+            }
+            header h1 {
+                font-size: 2rem;
+            }
+            .hero h2 {
+                font-size: 1.5rem;
+            }
+            .datetime-group {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <h1>Picture Perfect Detailing</h1>
+        <p>Mobile Car Detailing at Your Convenience</p>
+    </header>
+
+    <!-- Navigation -->
+    <nav aria-label="Main navigation">
+        <ul>
+            <li><a href="#hero" onclick="scrollToSection('hero')">Home</a></li>
+            <li><a href="#services" onclick="scrollToSection('services')">Packages</a></li>
+            <li><a href="#specialized-services" onclick="scrollToSection('specialized-services')">Specialized Services</a></li>
+            <li><a href="#process" onclick="scrollToSection('process')">Our Process</a></li>
+            <li><a href="#contact" onclick="scrollToSection('contact')">Contact</a></li>
+        </ul>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="hero" class="hero" aria-labelledby="hero-heading">
+        <div id="particles"></div>
+        <div class="hero-content">
+            <h2 id="hero-heading">Get Your Car Sparkling Clean</h2>
+            <p>Explore our detailing packages, specialized services, and our careful process to find the perfect care for your vehicle.</p>
+            <button onclick="scrollToSection('services')" class="btn">View Packages</button>
+            <button onclick="openBookingModal()" class="btn">Book Now</button>
+        </div>
+    </section>
+
+    <!-- Services -->
+    <section id="services" class="services" aria-labelledby="services-heading">
+        <h2 id="services-heading">Our Packages</h2>
+        <div class="service-grid">
+            <div class="service-card">
+                <h3>Basic Shine</h3>
+                <p>Perfect for lightly soiled vehicles.</p>
+                <p class="price">$50-$80</p>
+                <ul>
+                    <li>Exterior wash</li>
+                    <li>Wheel cleaning</li>
+                    <li>Interior vacuum</li>
+                </ul>
+            </div>
+            <div class="service-card">
+                <h3>Deluxe Clean</h3>
+                <p>Ideal for moderately dirty vehicles.</p>
+                <p class="price">$90-$130</p>
+                <ul>
+                    <li>Basic Shine services</li>
+                    <li>Wax application</li>
+                    <li>Interior wipe-down</li>
+                </ul>
+            </div>
+            <div class="service-card">
+                <h3>Ultimate Detail</h3>
+                <p>Best for heavily soiled vehicles.</p>
+                <p class="price">$140-$200</p>
+                <ul>
+                    <li>Deluxe Clean services</li>
+                    <li>Deep interior cleaning</li>
+                    <li>Polishing</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- Specialized Services -->
+    <section id="specialized-services" class="specialized-services" aria-labelledby="specialized-services-heading">
+        <h2 id="specialized-services-heading">Specialized Services</h2>
+        <div class="service-grid">
+            <div class="service-card">
+                <h3>Paint Correction</h3>
+                <p>Removes scratches, swirls, and oxidation to restore your vehicle’s paint.</p>
+                <p class="price">$150-$250</p>
+                <ul>
+                    <li>Single-stage correction</li>
+                    <li>Polishing for shine</li>
+                    <li>Suitable for all vehicle sizes</li>
+                </ul>
+            </div>
+            <div class="service-card">
+                <h3>Ceramic Coating</h3>
+                <p>Applies a protective layer for long-lasting shine and protection.</p>
+                <p class="price">$250-$450</p>
+                <ul>
+                    <li>Up to 2-year protection</li>
+                    <li>Hydrophobic surface</li>
+                    <li>UV and chemical resistance</li>
+                </ul>
+            </div>
+            <div class="service-card">
+                <h3>Headlight Restoration</h3>
+                <p>Restores cloudy headlights for clarity and safety.</p>
+                <p class="price">$60-$100</p>
+                <ul>
+                    <li>Sanding and polishing</li>
+                    <li>Protective sealant</li>
+                    <li>Improves nighttime visibility</li>
+                </ul>
+            </div>
+            <div class="service-card">
+                <h3>Odor Elimination</h3>
+                <p>Removes odors like smoke or pet smells for a fresh interior.</p>
+                <p class="price">$70-$120</p>
+                <ul>
+                    <li>Ozone treatment or deodorizers</li>
+                    <li>Targets persistent odors</li>
+                    <li>Safe for all vehicles</li>
+                </ul>
+            </div>
+            <div class="service-card">
+                <h3>Engine Bay Cleaning</h3>
+                <p>Cleans engine components for a pristine look and maintenance.</p>
+                <p class="price">$50-$90</p>
+                <ul>
+                    <li>Degreasing and rinsing</li>
+                    <li>Protective dressing</li>
+                    <li>Safe for all engines</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- Our Process -->
+    <section id="process" class="process" aria-labelledby="process-heading">
+        <h2 id="process-heading">Our Process</h2>
+        <p style="text-align: center; color: #d1d5db; margin-bottom: 1.5rem;">At Picture Perfect Detailing, we treat every vehicle with the utmost care, using high-quality products and gentle techniques to ensure your car looks its best. Learn how our services enhance your vehicle and our commitment to careful handling.</p>
+        <div class="process-grid">
+            <div class="process-card">
+                <h3>Basic Shine</h3>
+                <p><strong>What It Does:</strong> Refreshes your vehicle’s exterior with a thorough wash for a sparkling clean look. Cleans wheels to remove brake dust and grime, and vacuums the interior for a tidy, dust-free cabin.</p>
+                <p><strong>How We Handle with Care:</strong> We use pH-neutral soaps to protect your paint, soft microfiber mitts to prevent scratches, and gentle vacuuming to preserve upholstery, ensuring a safe and effective clean.</p>
+            </div>
+            <div class="process-card">
+                <h3>Deluxe Clean</h3>
+                <p><strong>What It Does:</strong> Enhances your vehicle’s shine with hand-applied wax for UV protection and a glossy finish. Cleans and conditions interior surfaces for a polished look, including all Basic Shine benefits.</p>
+                <p><strong>How We Handle with Care:</strong> We apply wax carefully for even coverage, use non-greasy cleaners for interiors, and inspect surfaces to avoid damage to delicate trims, keeping your car pristine.</p>
+            </div>
+            <div class="process-card">
+                <h3>Ultimate Detail</h3>
+                <p><strong>What It Does:</strong> Restores your vehicle to near-showroom condition with deep interior cleaning of carpets, seats, and crevices, plus exterior polishing for a mirror-like finish. Includes all Deluxe Clean benefits.</p>
+                <p><strong>How We Handle with Care:</strong> We use steam cleaning for safe interior sanitization, premium polishes to protect paint, and pre-wash inspections to tailor the process, ensuring every detail is perfect.</p>
+            </div>
+            <div class="process-card">
+                <h3>Paint Correction</h3>
+                <p><strong>What It Does:</strong> Removes scratches, swirls, and oxidation, restoring your vehicle’s paint to a flawless, vibrant appearance.</p>
+                <p><strong>How We Handle with Care:</strong> We use machine polishers with precise control, select pads and compounds suited to your vehicle’s paint, and test small areas first to ensure a safe, high-quality finish.</p>
+            </div>
+            <div class="process-card">
+                <h3>Ceramic Coating</h3>
+                <p><strong>What It Does:</strong> Applies a durable, hydrophobic layer for up to 2 years of protection against UV rays, dirt, and chemicals, keeping your car glossy and easy to clean.</p>
+                <p><strong>How We Handle with Care:</strong> We meticulously prep surfaces by washing, decontaminating, and polishing, apply the coating in a dust-free environment, and cure it with infrared lamps for maximum durability.</p>
+            </div>
+            <div class="process-card">
+                <h3>Headlight Restoration</h3>
+                <p><strong>What It Does:</strong> Restores cloudy headlights to clear, improving nighttime visibility and enhancing your vehicle’s appearance.</p>
+                <p><strong>How We Handle with Care:</strong> We use fine-grit sandpaper and gentle polishing compounds, apply a UV-resistant sealant, and mask surrounding paint to prevent damage, ensuring safe and effective restoration.</p>
+            </div>
+            <div class="process-card">
+                <h3>Odor Elimination</h3>
+                <p><strong>What It Does:</strong> Eliminates odors like smoke, pet smells, or mildew for a fresh, comfortable interior.</p>
+                <p><strong>How We Handle with Care:</strong> We use safe ozone treatments or eco-friendly deodorizers, ventilate thoroughly, and protect interior materials, ensuring a clean and odor-free cabin.</p>
+            </div>
+            <div class="process-card">
+                <h3>Engine Bay Cleaning</h3>
+                <p><strong>What It Does:</strong> Cleans engine components for a pristine look, aiding maintenance and boosting resale value.</p>
+                <p><strong>How We Handle with Care:</strong> We use low-pressure water and non-corrosive degreasers, cover sensitive electronics, and apply protective dressings, ensuring a safe and thorough clean.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact -->
+    <section id="contact" class="contact" aria-labelledby="contact-heading">
+        <h2 id="contact-heading">Contact Us</h2>
+        <p>Ready to book? Reach out to us!</p>
+        <p>Phone: <a href="tel:+14096568885" aria-label="Call us at 409-656-8885">(409) 656-8885</a></p>
+        <p>Email: <a href="mailto:ppdetailing07@gmail.com" aria-label="Email us at ppdetailing07@gmail.com">ppdetailing07@gmail.com</a></p>
+        <button class="btn" onclick="openBookingModal()">Book Now</button>
+    </section>
+
+    <!-- Booking Modal -->
+    <div id="bookingModal" class="modal" role="dialog" aria-labelledby="booking-heading" aria-modal="true">
+        <div class="modal-content">
+            <button class="btn back-btn" onclick="closeBookingModal()" aria-label="Close booking form">Back</button>
+            <h3 id="booking-heading">Book Your Detailing Appointment</h3>
+            <form id="bookingForm" action="https://formspree.io/f/manjwdyj" method="POST">
+                <label for="name">Name *</label>
+                <input type="text" id="name" name="name" required placeholder="Your full name" aria-required="true">
+                
+                <label for="phone">Phone *</label>
+                <input type="tel" id="phone" name="phone" required placeholder="(123) 456-7890" pattern="^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$" aria-required="true">
+                
+                <label for="email">Email *</label>
+                <input type="email" id="email" name="email" required placeholder="your@email.com" aria-required="true">
+                
+                <label for="vehicle">Vehicle Type *</label>
+                <select id="vehicle" name="vehicle" required aria-required="true">
+                    <option value="" disabled selected>Select vehicle type</option>
+                    <option value="Sedan">Sedan</option>
+                    <option value="SUV">SUV</option>
+                    <option value="Truck">Truck</option>
+                    <option value="Van">Van</option>
+                </select>
+                
+                <label for="package">Package *</label>
+                <select id="package" name="package" required aria-required="true">
+                    <option value="" disabled selected>Select a package</option>
+                    <option value="Basic Shine">Basic Shine ($50-$80)</option>
+                    <option value="Deluxe Clean">Deluxe Clean ($90-$130)</option>
+                    <option value="Ultimate Detail">Ultimate Detail ($140-$200)</option>
+                </select>
+                
+                <label>Add Specialized Services (Optional)</label>
+                <div class="checkbox-group">
+                    <label><input type="checkbox" name="specialized_services" value="Paint Correction"> Paint Correction ($150-$250)</label>
+                    <label><input type="checkbox" name="specialized_services" value="Ceramic Coating"> Ceramic Coating ($250-$450)</label>
+                    <label><input type="checkbox" name="specialized_services" value="Headlight Restoration"> Headlight Restoration ($60-$100)</label>
+                    <label><input type="checkbox" name="specialized_services" value="Odor Elimination"> Odor Elimination ($70-$120)</label>
+                    <label><input type="checkbox" name="specialized_services" value="Engine Bay Cleaning"> Engine Bay Cleaning ($50-$90)</label>
+                </div>
+                
+                <div class="datetime-group">
+                    <div>
+                        <label for="date">Preferred Date *</label>
+                        <select id="date" name="date" required aria-required="true">
+                            <option value="" disabled selected>Select a date</option>
+                            <!-- Options populated by JavaScript -->
+                        </select>
+                    </div>
+                    <div>
+                        <label for="time">Preferred Time *</label>
+                        <select id="time" name="time" required aria-required="true">
+                            <option value="" disabled selected>Select a time</option>
+                            <option value="8:00 AM">8:00 AM</option>
+                            <option value="9:00 AM">9:00 AM</option>
+                            <option value="10:00 AM">10:00 AM</option>
+                            <option value="11:00 AM">11:00 AM</option>
+                            <option value="12:00 PM">12:00 PM</option>
+                            <option value="1:00 PM">1:00 PM</option>
+                            <option value="2:00 PM">2:00 PM</option>
+                            <option value="3:00 PM">3:00 PM</option>
+                            <option value="4:00 PM">4:00 PM</option>
+                            <option value="5:00 PM">5:00 PM</option>
+                            <option value="6:00 PM">6:00 PM</option>
+                        </select>
+                    </div>
+                </div>
+                <input type="hidden" id="datetime" name="datetime">
+                
+                <label for="notes">Additional Notes</label>
+                <textarea id="notes" name="notes" placeholder="Any special requests or details" aria-describedby="notes-desc"></textarea>
+                <p id="notes-desc" class="sr-only">Optional field for any additional information or special requests about your detailing appointment.</p>
+                
+                <button type="submit" class="btn">Submit Booking</button>
+            </form>
+            <p id="confirmation" class="confirmation">Thank you! Your booking request has been sent. We'll contact you soon to confirm.</p>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer aria-label="Footer">
+        <p>Serving Ragley, LA, and Nederland, TX<br>© 2025 Picture Perfect Detailing. All rights reserved.</p>
+        <div>
+            <a href="https://www.facebook.com/PicturePerfectDetailing" target="_blank" aria-label="Visit our Facebook page">Facebook</a>
+            <a href="https://www.instagram.com/picture_perf_detailing" target="_blank" aria-label="Visit our Instagram page">Instagram</a>
+            <a href="https://www.tiktok.com/@picture.perfect.d3" target="_blank" aria-label="Visit our TikTok page">TikTok</a>
+        </div>
+        <!-- Optional: Add Google Analytics tracking code here after publishing -->
+    </footer>
+
+    <script>
+        function scrollToSection(sectionId) {
+            const element = document.getElementById(sectionId);
+            element.scrollIntoView({ behavior: 'smooth' });
+            element.focus({ preventScroll: true });
+        }
+
+        // Modal functionality
+        function openBookingModal() {
+            const modal = document.getElementById('bookingModal');
+            modal.style.display = 'flex';
+            document.getElementById('confirmation').style.display = 'none';
+            document.getElementById('bookingForm').reset();
+            const checkboxes = document.querySelectorAll('.checkbox-group input[type="checkbox"]');
+            checkboxes.forEach(checkbox => checkbox.checked = false);
+
+            // Populate date dropdown
+            const dateSelect = document.getElementById('date');
+            dateSelect.innerHTML = '<option value="" disabled selected>Select a date</option>';
+            const today = new Date('2025-05-30');
+            for (let i = 1; i <= 30; i++) {
+                const date = new Date(today);
+                date.setDate(today.getDate() + i);
+                const dateStr = date.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' });
+                const option = document.createElement('option');
+                option.value = dateStr;
+                option.textContent = dateStr;
+                dateSelect.appendChild(option);
+            }
+
+            document.getElementById('date').value = '';
+            document.getElementById('time').value = '';
+            document.getElementById('name').focus();
+        }
+
+        function closeBookingModal() {
+            document.getElementById('bookingModal').style.display = 'none';
+        }
+
+        // Form submission handling with validation
+        document.getElementById('bookingForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const phone = document.getElementById('phone').value;
+            const email = document.getElementById('email').value;
+            const date = document.getElementById('date').value;
+            const time = document.getElementById('time').value;
+            const phoneRegex = /^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/;
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!phoneRegex.test(phone)) {
+                alert('Please enter a valid phone number (e.g., (123) 456-7890).');
+                return;
+            }
+            if (!emailRegex.test(email)) {
+                alert('Please enter a valid email address.');
+                return;
+            }
+            if (!date) {
+                alert('Please select a date.');
+                return;
+            }
+            if (!time) {
+                alert('Please select a time.');
+                return;
+            }
+            // Combine date and time
+            document.getElementById('datetime').value = `${date} ${time}`;
+            const form = this;
+            fetch(form.action, {
+                method: 'POST',
+                body: new FormData(form),
+                headers: { 'Accept': 'application/json' }
+            }).then(response => {
+                if (response.ok) {
+                    form.reset();
+                    const checkboxes = document.querySelectorAll('.checkbox-group input[type="checkbox"]');
+                    checkboxes.forEach(checkbox => checkbox.checked = false);
+                    document.getElementById('confirmation').style.display = 'block';
+                    setTimeout(closeBookingModal, 3000);
+                } else {
+                    alert('Submission failed. Please check your Formspree endpoint or try again later.');
+                }
+            }).catch(error => {
+                alert('Error: Unable to connect to Formspree. Please check your internet connection or Formspree setup.');
+            });
+        });
+
+        // Simple particle effect for hero section (optimized)
+        const canvas = document.createElement('canvas');
+        document.getElementById('particles').appendChild(canvas);
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        const ctx = canvas.getContext('2d');
+        const particles = [];
+        const particleCount = window.innerWidth < 768 ? 30 : 50;
+        for (let i = 0; i < particleCount; i++) {
+            particles.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                radius: Math.random() * 2 + 1,
+                speedX: Math.random() * 0.3 - 0.15,
+                speedY: Math.random() * 0.3 - 0.15
+            });
+        }
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => {
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(0, 240, 255, 0.5)';
+                ctx.fill();
+                p.x += p.speedX;
+                p.y += p.speedY;
+                if (p.x < 0 || p.x > canvas.width) p.speedX *= -1;
+                if (p.y < 0 || p.y > canvas.height) p.speedY *= -1;
+            });
+            requestAnimationFrame(animateParticles);
+        }
+        animateParticles();
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+
+        // Keyboard navigation for modal
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && document.getElementById('bookingModal').style.display === 'flex') {
+                closeBookingModal();
+            }
+        });
+    </script>
+</body>
+</html>
